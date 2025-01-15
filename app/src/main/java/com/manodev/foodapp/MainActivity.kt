@@ -26,12 +26,13 @@ import kotlinx.coroutines.launch
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     var showSplashScreen = true
+
     override fun onCreate(savedInstanceState: Bundle?) {
         installSplashScreen().apply {
-            setKeepOnScreenCondition{
+            setKeepOnScreenCondition {
                 showSplashScreen
             }
-            setOnExitAnimationListener{ screen ->
+            setOnExitAnimationListener { screen ->
                 val zoomX = ObjectAnimator.ofFloat(
                     screen.iconView,
                     View.SCALE_X,
@@ -71,6 +72,8 @@ class MainActivity : ComponentActivity() {
                 }
             }
         }
+
+
         CoroutineScope(Dispatchers.IO).launch {
             delay(3000)
             showSplashScreen = false
