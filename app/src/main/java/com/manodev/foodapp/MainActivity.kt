@@ -18,6 +18,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.core.animation.doOnEnd
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import com.manodev.foodapp.ui.features.auth.AuthScreen
+import com.manodev.foodapp.ui.features.auth.signup.SignUpScreen
 import com.manodev.foodapp.ui.theme.MVVMFoodAppTheme
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
@@ -67,8 +68,10 @@ class MainActivity : ComponentActivity() {
         setContent {
             MVVMFoodAppTheme {
                 Scaffold(modifier =  Modifier.fillMaxSize()) { innerPadding ->
-                    Box(modifier = Modifier.padding(innerPadding))
-                    AuthScreen()
+                    Box(modifier = Modifier.padding(innerPadding)) {
+                        SignUpScreen()
+                    }
+
                 }
 
             }
