@@ -2,18 +2,24 @@ package com.manodev.foodapp.ui.features.auth.signup
 
 import android.provider.ContactsContract.CommonDataKinds.Email
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.manodev.foodapp.data.FoodApi
+import com.manodev.foodapp.data.models.SignUpRequest
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
 class SignUpViewModel @Inject constructor(
     val foodApi: FoodApi
 ) : ViewModel() {
+
+    //
 
     private val _uiState = MutableStateFlow<SignupEvent>(SignupEvent.Nothing)
     val uiState = _uiState.asStateFlow()
@@ -43,10 +49,28 @@ class SignUpViewModel @Inject constructor(
     }
 
     fun onSignupClick() {
-        _uiState.value = SignupEvent.Loading
+        viewModelScope.launch {
+            _uiState.value = SignupEvent.Loading
 
-        _uiState.value = SignupEvent.Success
-        _navigationEvent.tryEmit(SignupNavigationEvent.NavigateToHome)
+            try {
+                val response = foodApi.signUp(
+                    SignUpRequest(
+                        name = name.value,
+                        email = email.value,
+                        password = password.value
+                    )
+                )
+                if (response.token.isNotEmpty()) {
+                    _uiState.value = SignupEvent.Success
+                    _navigationEvent.emit(SignupNavigationEvent.NavigateToHome)
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
+                _uiState.value = SignupEvent.Error
+            }
+
+        }
+
     }
 
     sealed class SignupNavigationEvent {
