@@ -3,6 +3,7 @@ package com.manodev.foodapp.ui.features.auth.signup
 import android.provider.ContactsContract.CommonDataKinds.Email
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.manodev.foodapp.data.FoodApi
 import com.manodev.foodapp.data.models.SignUpRequest
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -71,6 +72,12 @@ class SignUpViewModel @Inject constructor(
 
         }
 
+    }
+
+    fun onLoginClicked() {
+         viewModelScope.launch {
+             _navigationEvent.emit(SignupNavigationEvent.NavigateToLogin)
+         }
     }
 
     sealed class SignupNavigationEvent {

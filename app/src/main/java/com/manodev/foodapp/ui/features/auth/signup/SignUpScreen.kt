@@ -44,14 +44,20 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.navigation.NavController
+import androidx.navigation.compose.rememberNavController
 import com.manodev.foodapp.R
 import com.manodev.foodapp.ui.FoodHubTextField
 import com.manodev.foodapp.ui.GroupSocialButtons
+import com.manodev.foodapp.ui.navigation.AuthScreen
+import com.manodev.foodapp.ui.navigation.Home
+import com.manodev.foodapp.ui.navigation.Login
 import com.manodev.foodapp.ui.theme.Orange
 import kotlinx.coroutines.flow.collectLatest
 
 @Composable
 fun SignUpScreen(
+    navController: NavController,
     viewModel: SignUpViewModel = hiltViewModel()
 ) {
     Box(
@@ -89,11 +95,15 @@ fun SignUpScreen(
             viewModel.navigationEvent.collectLatest { event ->
                 when (event) {
                     is SignUpViewModel.SignupNavigationEvent.NavigateToHome -> {
-                        Toast.makeText(
-                            context,
-                            "OK",
-                            Toast.LENGTH_LONG
-                        ).show()
+                        navController.navigate(Home) {
+                            popUpTo(AuthScreen){
+                                inclusive = true
+                            }
+                        }
+                    }
+
+                    is SignUpViewModel.SignupNavigationEvent.NavigateToLogin -> {
+                        navController.navigate(Login)
                     }
 
                     else -> {
@@ -190,7 +200,9 @@ fun SignUpScreen(
                 modifier = Modifier
                     .padding(8.dp)
                     .fillMaxWidth()
-                    .clickable { },
+                    .clickable {
+                        viewModel.onLoginClicked()
+                    },
                 textAlign = TextAlign.Center
             )
             GroupSocialButtons(
@@ -205,5 +217,5 @@ fun SignUpScreen(
 @Preview(showBackground = true)
 @Composable
 fun SignUpScreenPreview() {
-    SignUpScreen()
+    SignUpScreen(rememberNavController())
 }
