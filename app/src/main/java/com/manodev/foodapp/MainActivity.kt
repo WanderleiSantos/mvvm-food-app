@@ -23,6 +23,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.manodev.foodapp.ui.features.auth.AuthScreen
+import com.manodev.foodapp.ui.features.auth.login.SignInScreen
 import com.manodev.foodapp.ui.features.auth.signup.SignUpScreen
 import com.manodev.foodapp.ui.navigation.AuthScreen
 import com.manodev.foodapp.ui.navigation.Home
@@ -90,11 +91,7 @@ class MainActivity : ComponentActivity() {
                             AuthScreen(navController)
                         }
                         composable<Login> {
-                            Box(modifier = Modifier
-                                .fillMaxSize()
-                                .background(Color.Green)) {
-
-                            }
+                            SignInScreen(navController)
                         }
                         composable<Home> {
                             Box(modifier = Modifier
