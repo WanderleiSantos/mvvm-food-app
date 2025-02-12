@@ -1,6 +1,7 @@
 package com.manodev.foodapp.data
 
 import com.manodev.foodapp.data.models.AuthResponse
+import com.manodev.foodapp.data.models.OAuthRequest
 import com.manodev.foodapp.data.models.SignInRequest
 import com.manodev.foodapp.data.models.SignUpRequest
 import retrofit2.http.Body
@@ -17,4 +18,7 @@ interface FoodApi {
 
     @POST("/auth/login")
     suspend fun signIn(@Body request: SignInRequest): AuthResponse
+
+    @POST("/auth/oauth")
+    suspend fun oAuth(@Body request: OAuthRequest): AuthResponse
 }
