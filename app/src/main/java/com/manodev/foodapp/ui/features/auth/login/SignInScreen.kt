@@ -191,8 +191,7 @@ fun SignInScreen(
             val context = LocalContext.current
             GroupSocialButtons(
                 color = Color.Black,
-                onFacebookClick = {},
-                onGoogleClick = { viewModel.onGoogleSignInClick(context) }
+                viewModel = viewModel
             )
         }
     }

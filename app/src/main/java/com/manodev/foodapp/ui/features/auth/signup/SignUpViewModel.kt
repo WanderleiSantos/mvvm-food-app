@@ -1,13 +1,10 @@
 package com.manodev.foodapp.ui.features.auth.signup
 
-import android.provider.ContactsContract.CommonDataKinds.Email
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.manodev.foodapp.data.FoodApi
 import com.manodev.foodapp.data.models.SignUpRequest
+import com.manodev.foodapp.ui.features.auth.BaseAuthViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asSharedFlow
@@ -17,10 +14,8 @@ import javax.inject.Inject
 
 @HiltViewModel
 class SignUpViewModel @Inject constructor(
-    val foodApi: FoodApi
-) : ViewModel() {
-
-    //
+    override val foodApi: FoodApi
+) : BaseAuthViewModel(foodApi) {
 
     private val _uiState = MutableStateFlow<SignupEvent>(SignupEvent.Nothing)
     val uiState = _uiState.asStateFlow()
@@ -75,9 +70,9 @@ class SignUpViewModel @Inject constructor(
     }
 
     fun onLoginClicked() {
-         viewModelScope.launch {
-             _navigationEvent.emit(SignupNavigationEvent.NavigateToLogin)
-         }
+        viewModelScope.launch {
+            _navigationEvent.emit(SignupNavigationEvent.NavigateToLogin)
+        }
     }
 
     sealed class SignupNavigationEvent {
@@ -90,5 +85,30 @@ class SignUpViewModel @Inject constructor(
         object Success : SignupEvent()
         object Error : SignupEvent()
         object Loading : SignupEvent()
+    }
+
+    override fun loading() {
+        viewModelScope.launch {
+            _uiState.value = SignupEvent.Loading
+        }
+    }
+
+    override fun onGoogleError(msg: String) {
+        viewModelScope.launch {
+            _uiState.value = SignupEvent.Error
+        }
+    }
+
+    override fun onFacebookError(msg: String) {
+        viewModelScope.launch {
+            _uiState.value = SignupEvent.Error
+        }
+    }
+
+    override fun onSocialLoginSuccess(token: String) {
+        viewModelScope.launch {
+            _uiState.value = SignupEvent.Success
+            _navigationEvent.emit(SignupNavigationEvent.NavigateToHome)
+        }
     }
 }

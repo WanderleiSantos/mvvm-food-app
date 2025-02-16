@@ -1,6 +1,6 @@
 package com.manodev.foodapp.ui
 
-import android.widget.Space
+import androidx.activity.ComponentActivity
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
@@ -27,6 +27,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
@@ -34,14 +35,14 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import com.manodev.foodapp.R
+import com.manodev.foodapp.ui.features.auth.BaseAuthViewModel
 import com.manodev.foodapp.ui.theme.Orange
 
 
 @Composable
 fun GroupSocialButtons(
     color: Color = Color.White,
-    onFacebookClick: () -> Unit,
-    onGoogleClick: () -> Unit
+    viewModel: BaseAuthViewModel
 ) {
     Column(
 
@@ -71,6 +72,7 @@ fun GroupSocialButtons(
                 color = color
             )
         }
+        val context = LocalContext.current as ComponentActivity
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween
@@ -78,13 +80,13 @@ fun GroupSocialButtons(
             SocialButton(
                 icon = R.drawable.ic_facebook,
                 title = R.string.sign_with_facebook,
-                onClick = onFacebookClick
+                onClick = { viewModel.onFacebookClicked(context) }
             )
 
             SocialButton(
                 icon = R.drawable.ic_google,
                 title = R.string.sign_with_google,
-                onClick = onGoogleClick
+                onClick = { viewModel.onGoogleClicked(context) }
             )
         }
     }

@@ -207,8 +207,7 @@ fun SignUpScreen(
             )
             GroupSocialButtons(
                 color = Color.Black,
-                onFacebookClick = {},
-                onGoogleClick = {}
+                viewModel = viewModel
             )
         }
     }
