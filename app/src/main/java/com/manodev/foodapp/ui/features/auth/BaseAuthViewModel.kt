@@ -12,9 +12,13 @@ import com.facebook.login.LoginResult
 import com.manodev.foodapp.data.FoodApi
 import com.manodev.foodapp.data.auth.GoogleAuthUiProvider
 import com.manodev.foodapp.data.models.OAuthRequest
+import com.manodev.foodapp.data.remote.ApiResponse
+import com.manodev.foodapp.data.remote.safeApiCall
 import kotlinx.coroutines.launch
 
 abstract class BaseAuthViewModel(open val foodApi: FoodApi) : ViewModel() {
+    var error: String = ""
+    var errorDescription: String = ""
 
     private val googleAuthUiProvider = GoogleAuthUiProvider()
     private lateinit var callbackManager: CallbackManager
@@ -24,40 +28,55 @@ abstract class BaseAuthViewModel(open val foodApi: FoodApi) : ViewModel() {
     abstract fun onFacebookError(msg: String)
     abstract fun onSocialLoginSuccess(token: String)
 
-    fun onFacebookClicked(context: ComponentActivity){
+    fun onFacebookClicked(context: ComponentActivity) {
         initiateFacebookLogin(context)
     }
 
-    fun onGoogleClicked(context: ComponentActivity){
+    fun onGoogleClicked(context: ComponentActivity) {
         initiateGoogleLogin(context)
     }
 
     protected fun initiateGoogleLogin(context: ComponentActivity) {
         viewModelScope.launch {
             loading()
-
-            val response = googleAuthUiProvider.signIn(
-                context,
-                CredentialManager.create(context)
-            )
-
-            if (response != null) {
-
-                val request = OAuthRequest(
-                    token = response.token,
-                    provider = "google"
+            try {
+                val response = googleAuthUiProvider.signIn(
+                    context,
+                    CredentialManager.create(context)
                 )
+                fetchFoodAppToken(response.token, "google") {
+                    onGoogleError(it)
+                }
+            } catch (e: Throwable) {
+                onGoogleError(e.message.toString())
+            }
+        }
+    }
 
-                val res = foodApi.oAuth(request)
-                if (res.token.isNotEmpty()) {
-                    onSocialLoginSuccess(res.token)
-                } else {
-                    onGoogleError("Failed")
+    private fun fetchFoodAppToken(token: String, provider: String, onError: (String) -> Unit) {
+        viewModelScope.launch {
+            val request = OAuthRequest(
+                token = token, provider = provider
+            )
+            val res = safeApiCall { foodApi.oAuth(request) }
+            when (res) {
+                is ApiResponse.Success -> {
+                    onSocialLoginSuccess(res.data.token)
                 }
 
-
-            } else {
-                onGoogleError("Failed")
+                else -> {
+                    val error = (res as? ApiResponse.Error)?.code
+                    if (error != null) {
+                        when (error) {
+                            401 -> onError("Unauthorized")
+                            500 -> onError("Server Error")
+                            404 -> onError("Not Found")
+                            else -> onError("Failed")
+                        }
+                    } else {
+                        onError("Failed")
+                    }
+                }
             }
         }
     }
@@ -69,19 +88,8 @@ abstract class BaseAuthViewModel(open val foodApi: FoodApi) : ViewModel() {
         LoginManager.getInstance()
             .registerCallback(callbackManager, object : FacebookCallback<LoginResult> {
                 override fun onSuccess(loginResult: LoginResult) {
-                    viewModelScope.launch {
-                        val request = OAuthRequest(
-                            token = loginResult.accessToken.token,
-                            provider = "facebook"
-                        )
-
-                        val res = foodApi.oAuth(request)
-
-                        if (res.token.isNotEmpty()) {
-                            onSocialLoginSuccess(res.token)
-                        } else {
-                            onFacebookError("Failed not Token")
-                        }
+                    fetchFoodAppToken(loginResult.accessToken.token, "facebook") {
+                        onFacebookError(it)
                     }
                 }
 

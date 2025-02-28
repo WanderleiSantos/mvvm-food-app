@@ -12,7 +12,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class AuthScreenViewModel @Inject constructor(
-    override val foodApi: FoodApi
+    override val foodApi: FoodApi,
 ) :
     BaseAuthViewModel(foodApi) {
 
@@ -44,6 +44,8 @@ class AuthScreenViewModel @Inject constructor(
 
     override fun onGoogleError(msg: String) {
         viewModelScope.launch {
+            error = "Google Sign In Failed"
+            errorDescription = msg
             _uiState.value = AuthEvent.Error
             _navigationEvent.emit(AuthNavigationEvent.ShowErrorDialog)
         }
@@ -51,8 +53,10 @@ class AuthScreenViewModel @Inject constructor(
 
     override fun onFacebookError(msg: String) {
         viewModelScope.launch {
-            _navigationEvent.emit(AuthNavigationEvent.ShowErrorDialog)
+            error = "Facebook Sign In Failed"
+            errorDescription = msg
             _uiState.value = AuthEvent.Error
+            _navigationEvent.emit(AuthNavigationEvent.ShowErrorDialog)
         }
     }
 

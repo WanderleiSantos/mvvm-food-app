@@ -25,6 +25,7 @@ import androidx.compose.material3.TextFieldColors
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.platform.LocalContext
@@ -118,6 +119,39 @@ fun SocialButton(
             Text(
                 text = stringResource(id = title),
                 color = Color.Black
+            )
+        }
+    }
+}
+
+@Composable
+fun BasicDialog(title: String, description: String, onClick: () -> Unit) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(16.dp))
+            .padding(16.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Text(
+            text = title,
+            color = Color.Black,
+            fontWeight = FontWeight.SemiBold
+        )
+        Spacer(modifier = Modifier.size(8.dp))
+        Text(
+            text = description,
+            color = Color.DarkGray
+        )
+        Spacer(modifier = Modifier.size(8.dp))
+        Button(
+            onClick = onClick,
+            colors = ButtonDefaults.buttonColors(containerColor = Orange),
+            shape = RoundedCornerShape(32.dp),
+        ) {
+            Text(
+                text = stringResource(id = R.string.ok),
+                color = Color.White
             )
         }
     }
