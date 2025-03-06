@@ -11,24 +11,23 @@ import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.core.animation.doOnEnd
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.manodev.foodapp.data.FoodHubSession
 import com.manodev.foodapp.ui.features.auth.AuthScreen
 import com.manodev.foodapp.ui.features.auth.login.SignInScreen
 import com.manodev.foodapp.ui.features.auth.signup.SignUpScreen
+import com.manodev.foodapp.ui.features.home.HomeScreen
 import com.manodev.foodapp.ui.navigation.AuthScreen
 import com.manodev.foodapp.ui.navigation.Home
 import com.manodev.foodapp.ui.navigation.Login
@@ -39,10 +38,14 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     var showSplashScreen = true
+
+    @Inject
+    lateinit var session: FoodHubSession
 
     override fun onCreate(savedInstanceState: Bundle?) {
         installSplashScreen().apply {
@@ -85,7 +88,7 @@ class MainActivity : ComponentActivity() {
                     val navController = rememberNavController()
                     NavHost(
                         navController = navController,
-                        startDestination = AuthScreen,
+                        startDestination = if (session.getToken() != null) Home else AuthScreen,
                         modifier = Modifier.padding(innerPadding),
                         enterTransition = {
                             slideIntoContainer(
@@ -122,13 +125,7 @@ class MainActivity : ComponentActivity() {
                             SignInScreen(navController)
                         }
                         composable<Home> {
-                            Box(
-                                modifier = Modifier
-                                    .fillMaxSize()
-                                    .background(Color.Red)
-                            ) {
-
-                            }
+                            HomeScreen(navController)
                         }
                     }
                 }

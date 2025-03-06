@@ -1,6 +1,7 @@
 package com.manodev.foodapp.data
 
 import com.manodev.foodapp.data.models.AuthResponse
+import com.manodev.foodapp.data.models.CategoriesResponse
 import com.manodev.foodapp.data.models.OAuthRequest
 import com.manodev.foodapp.data.models.SignInRequest
 import com.manodev.foodapp.data.models.SignUpRequest
@@ -22,4 +23,7 @@ interface FoodApi {
 
     @POST("/auth/oauth")
     suspend fun oAuth(@Body request: OAuthRequest): Response<AuthResponse>
+
+    @GET("/categories")
+    suspend fun getCategories(): Response<CategoriesResponse>
 }
