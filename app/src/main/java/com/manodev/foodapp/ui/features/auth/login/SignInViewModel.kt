@@ -2,6 +2,7 @@ package com.manodev.foodapp.ui.features.auth.login
 
 import androidx.lifecycle.viewModelScope
 import com.manodev.foodapp.data.FoodApi
+import com.manodev.foodapp.data.FoodHubSession
 import com.manodev.foodapp.data.models.SignInRequest
 import com.manodev.foodapp.data.remote.ApiResponse
 import com.manodev.foodapp.data.remote.safeApiCall
@@ -17,6 +18,7 @@ import javax.inject.Inject
 @HiltViewModel
 class SignInViewModel @Inject constructor(
     override val foodApi: FoodApi,
+    val session: FoodHubSession
 ) : BaseAuthViewModel(foodApi) {
 
 
@@ -56,6 +58,7 @@ class SignInViewModel @Inject constructor(
 
                 when (response) {
                     is ApiResponse.Success -> {
+                        session.storeToken(response.data.token)
                         _uiState.value = SignInEvent.Success
                         _navigationEvent.emit(SignInNavigationEvent.NavigateToHome)
                     }
@@ -126,6 +129,7 @@ class SignInViewModel @Inject constructor(
 
     override fun onSocialLoginSuccess(token: String) {
         viewModelScope.launch {
+            session.storeToken(token)
             _uiState.value = SignInEvent.Success
             _navigationEvent.emit(SignInNavigationEvent.NavigateToHome)
         }

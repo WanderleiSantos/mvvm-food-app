@@ -2,6 +2,7 @@ package com.manodev.foodapp.ui.features.auth
 
 import androidx.lifecycle.viewModelScope
 import com.manodev.foodapp.data.FoodApi
+import com.manodev.foodapp.data.FoodHubSession
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -13,6 +14,7 @@ import javax.inject.Inject
 @HiltViewModel
 class AuthScreenViewModel @Inject constructor(
     override val foodApi: FoodApi,
+    val session: FoodHubSession
 ) :
     BaseAuthViewModel(foodApi) {
 
@@ -62,6 +64,7 @@ class AuthScreenViewModel @Inject constructor(
 
     override fun onSocialLoginSuccess(token: String) {
         viewModelScope.launch {
+            session.storeToken(token)
             _uiState.value = AuthEvent.Success
             _navigationEvent.emit(AuthNavigationEvent.NavigateToHome)
         }

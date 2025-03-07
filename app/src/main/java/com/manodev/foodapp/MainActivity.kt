@@ -23,6 +23,7 @@ import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.manodev.foodapp.data.FoodApi
 import com.manodev.foodapp.data.FoodHubSession
 import com.manodev.foodapp.ui.features.auth.AuthScreen
 import com.manodev.foodapp.ui.features.auth.login.SignInScreen
@@ -44,6 +45,8 @@ import javax.inject.Inject
 class MainActivity : ComponentActivity() {
     var showSplashScreen = true
 
+    @Inject
+    lateinit var foodApi: FoodApi
     @Inject
     lateinit var session: FoodHubSession
 

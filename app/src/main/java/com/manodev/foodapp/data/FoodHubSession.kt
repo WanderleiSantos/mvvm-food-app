@@ -15,7 +15,7 @@ class FoodHubSession(
     }
 
     fun getToken(): String? {
-        sharedPres.getString("token", "")?.let {
+        sharedPres.getString("token", null)?.let {
             return it
         }
         return null
