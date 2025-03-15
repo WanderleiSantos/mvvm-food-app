@@ -22,6 +22,7 @@ import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -41,11 +42,27 @@ import coil3.compose.AsyncImage
 import com.manodev.foodapp.R
 import com.manodev.foodapp.data.models.Category
 import com.manodev.foodapp.data.models.Restaurant
+import com.manodev.foodapp.ui.navigation.RestaurantDetails
 import com.manodev.foodapp.ui.theme.Orange
 import com.manodev.foodapp.ui.theme.Typography
+import kotlinx.coroutines.flow.collectLatest
 
 @Composable
 fun HomeScreen(navController: NavController, viewModel: HomeViewModel = hiltViewModel()) {
+
+    LaunchedEffect(Unit) {
+        viewModel.navigationEvent.collectLatest {
+            when (it) {
+                is HomeViewModel.HomeScreenNavigationEvents.NavigateToDetail -> {
+                    navController.navigate(RestaurantDetails(it.id, it.name, it.imageUrl))
+                }
+                 else -> {
+
+                 }
+            }
+        }
+    }
+
     Column(
         modifier = Modifier.fillMaxSize()
     ) {
@@ -65,7 +82,8 @@ fun HomeScreen(navController: NavController, viewModel: HomeViewModel = hiltView
                     navController.navigate("detail/${it.id}")
                 }
                 RestaurantsList(restaurants = viewModel.restaurant, onRestaurantSelected = {
-                    navController.navigate("restaurant/${it.id}")
+                    viewModel.onRestaurantSelected(it)
+                    //navController.navigate("restaurant/${it.id}")
                 })
             }
 

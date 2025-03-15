@@ -23,15 +23,18 @@ import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.toRoute
 import com.manodev.foodapp.data.FoodApi
 import com.manodev.foodapp.data.FoodHubSession
 import com.manodev.foodapp.ui.features.auth.AuthScreen
 import com.manodev.foodapp.ui.features.auth.login.SignInScreen
 import com.manodev.foodapp.ui.features.auth.signup.SignUpScreen
 import com.manodev.foodapp.ui.features.home.HomeScreen
+import com.manodev.foodapp.ui.features.restaurants_details.RestaurantDetailsScreen
 import com.manodev.foodapp.ui.navigation.AuthScreen
 import com.manodev.foodapp.ui.navigation.Home
 import com.manodev.foodapp.ui.navigation.Login
+import com.manodev.foodapp.ui.navigation.RestaurantDetails
 import com.manodev.foodapp.ui.navigation.SignUp
 import com.manodev.foodapp.ui.theme.MVVMFoodAppTheme
 import dagger.hilt.android.AndroidEntryPoint
@@ -47,6 +50,7 @@ class MainActivity : ComponentActivity() {
 
     @Inject
     lateinit var foodApi: FoodApi
+
     @Inject
     lateinit var session: FoodHubSession
 
@@ -129,6 +133,15 @@ class MainActivity : ComponentActivity() {
                         }
                         composable<Home> {
                             HomeScreen(navController)
+                        }
+                        composable<RestaurantDetails> {
+                            val route = it.toRoute<RestaurantDetails>()
+                            RestaurantDetailsScreen(
+                                navController,
+                                name = route.restaurantName,
+                                imageUrl = route.restaurantImageUrl,
+                                restaurantID = route.restaurantID
+                            )
                         }
                     }
                 }
