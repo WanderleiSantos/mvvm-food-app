@@ -1,7 +1,10 @@
 package com.manodev.foodapp.ui.features.restaurants_details
 
-import android.widget.Space
+import androidx.compose.animation.AnimatedVisibilityScope
+import androidx.compose.animation.ExperimentalSharedTransitionApi
+import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -9,10 +12,12 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Star
@@ -28,6 +33,8 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
@@ -35,14 +42,18 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import coil3.compose.AsyncImage
 import com.manodev.foodapp.R
+import com.manodev.foodapp.data.models.FoodItem
+import com.manodev.foodapp.ui.gridItems
 
+@OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
-fun RestaurantDetailsScreen(
+fun SharedTransitionScope.RestaurantDetailsScreen(
     navController: NavController,
     name: String,
     imageUrl: String,
     restaurantID: String,
-    viewModel: RestaurantViewModel = hiltViewModel()
+    animatedVisibilityScope: AnimatedVisibilityScope,
+    viewModel: RestaurantViewModel = hiltViewModel(),
 ) {
 
     LaunchedEffect(restaurantID) {
@@ -57,6 +68,8 @@ fun RestaurantDetailsScreen(
         item {
             RestaurantDetailsHeader(
                 imageUrl = imageUrl,
+                restaurantID = restaurantID,
+                animatedVisibilityScope = animatedVisibilityScope,
                 onBackButtonClick = { navController.popBackStack() },
                 onFavoriteButtonClick = { /*TODO*/ }
             )
@@ -65,7 +78,9 @@ fun RestaurantDetailsScreen(
         item {
             RestaurantDetails(
                 title = name,
-                description = "Lorem ipsum dolor sit amet, consectetur adipiscing elit. "
+                description = "Lorem ipsum dolor sit amet, consectetur adipiscing elit. ",
+                animatedVisibilityScope = animatedVisibilityScope,
+                restaurantID = restaurantID
             )
         }
 
@@ -82,18 +97,28 @@ fun RestaurantDetailsScreen(
                     }
                 }
             }
+
             is RestaurantViewModel.RestaurantEvent.Success -> {
                 val foodItems = (uiSate.value as RestaurantViewModel.RestaurantEvent.Success).foodItems
-                items(foodItems) { foodItem ->
-                     Text(text = foodItem.name)
+                if (foodItems.isNotEmpty()) {
+                    gridItems(foodItems, 2) { foodItem ->
+                        FoodItemView(foodItem = foodItem)
+                    }
+                } else {
+                    item {
+                        Text(text = "No food Items")
+                    }
                 }
+
             }
+
             is RestaurantViewModel.RestaurantEvent.Error -> {
                 item {
                     Text(text = "errorMessage")
                 }
             }
-            RestaurantViewModel.RestaurantEvent.Nothing ->  {
+
+            RestaurantViewModel.RestaurantEvent.Nothing -> {
 
             }
         }
@@ -101,8 +126,14 @@ fun RestaurantDetailsScreen(
 
 }
 
+@OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
-fun RestaurantDetails(title: String, description: String) {
+fun SharedTransitionScope.RestaurantDetails(
+    title: String,
+    description: String,
+    restaurantID: String,
+    animatedVisibilityScope: AnimatedVisibilityScope,
+) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -110,7 +141,11 @@ fun RestaurantDetails(title: String, description: String) {
     ) {
         Text(
             text = title,
-            style = MaterialTheme.typography.titleLarge
+            style = MaterialTheme.typography.titleLarge,
+            modifier = Modifier.sharedElement(
+                state = rememberSharedContentState(key = "title/${restaurantID}"),
+                animatedVisibilityScope = animatedVisibilityScope
+            )
         )
         Spacer(modifier = Modifier.size(8.dp))
         Row(
@@ -152,9 +187,12 @@ fun RestaurantDetails(title: String, description: String) {
     }
 }
 
+@OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
-fun RestaurantDetailsHeader(
+fun SharedTransitionScope.RestaurantDetailsHeader(
     imageUrl: String,
+    restaurantID: String,
+    animatedVisibilityScope: AnimatedVisibilityScope,
     onBackButtonClick: () -> Unit,
     onFavoriteButtonClick: () -> Unit,
 ) {
@@ -168,16 +206,21 @@ fun RestaurantDetailsHeader(
             contentDescription = null,
             modifier = Modifier
                 .fillMaxWidth()
+                .height(200.dp)
+                .sharedElement(
+                    state = rememberSharedContentState(key = "image/${restaurantID}"),
+                    animatedVisibilityScope = animatedVisibilityScope
+                )
                 .clip(
                     shape = RoundedCornerShape(
                         bottomStart = 16.dp,
                         bottomEnd = 16.dp
                     )
                 ),
-            contentScale = ContentScale.Fit
+            contentScale = ContentScale.Crop
         )
         IconButton(
-            onClick = { onBackButtonClick() },
+            onClick = onBackButtonClick,
             modifier = Modifier
                 .padding(16.dp)
                 .size(48.dp)
@@ -198,6 +241,105 @@ fun RestaurantDetailsHeader(
             Image(
                 painter = painterResource(id = R.drawable.favorite),
                 contentDescription = null
+            )
+        }
+    }
+}
+
+@Composable
+fun FoodItemView(foodItem: FoodItem) {
+    Column(
+        modifier = Modifier
+            .padding(16.dp)
+            .width(162.dp)
+            .height(216.dp)
+            .shadow(
+                elevation = 16.dp,
+                shape = RoundedCornerShape(16.dp),
+                ambientColor = Color.Gray.copy(alpha = 0.8f),
+                spotColor = Color.Gray.copy(alpha = 0.8f)
+            )
+            .background(color = Color.White)
+            .clip(RoundedCornerShape(16.dp))
+    ) {
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(147.dp)
+        ) {
+            AsyncImage(
+                model = foodItem.imageUrl,
+                contentDescription = null,
+                modifier = Modifier
+                    .fillMaxSize()
+                    .clip(RoundedCornerShape(16.dp)),
+                contentScale = ContentScale.Crop,
+            )
+            Text(
+                text = "${foodItem.price}",
+                style = MaterialTheme.typography.bodySmall,
+                modifier = Modifier
+                    .padding(8.dp)
+                    .clip(RoundedCornerShape(8.dp))
+                    .background(Color.White)
+                    .padding(horizontal = 16.dp)
+                    .align(Alignment.TopStart)
+            )
+
+
+            Image(
+                painter = painterResource(id = R.drawable.favorite),
+                contentDescription = null,
+                modifier = Modifier
+                    .size(28.dp)
+                    .clip(CircleShape)
+                    .align(Alignment.TopEnd)
+            )
+
+            Row(
+                modifier = Modifier
+                    .align(Alignment.BottomStart)
+                    .clip(RoundedCornerShape(16.dp))
+                    .padding(horizontal = 8.dp)
+                    .background(Color.White),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = "4.5",
+                    style = MaterialTheme.typography.titleSmall,
+                    maxLines = 1
+                )
+                Spacer(modifier = Modifier.size(8.dp))
+                Icon(
+                    imageVector = Icons.Filled.Star,
+                    contentDescription = null,
+                    modifier = Modifier.size(14.dp),
+                )
+                Spacer(modifier = Modifier.size(8.dp))
+                Text(
+                    text = "(21)",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = Color.Gray,
+                    maxLines = 1
+                )
+            }
+        }
+
+        Column(
+            modifier = Modifier
+                .padding(8.dp)
+                .fillMaxWidth()
+        ) {
+            Text(
+                text = foodItem.name,
+                style = MaterialTheme.typography.bodyMedium,
+                maxLines = 1
+            )
+            Text(
+                text = foodItem.description,
+                style = MaterialTheme.typography.bodyMedium,
+                color = Color.Gray,
+                maxLines = 1
             )
         }
     }

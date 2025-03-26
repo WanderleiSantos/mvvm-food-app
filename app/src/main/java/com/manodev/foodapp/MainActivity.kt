@@ -8,6 +8,8 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.animation.AnimatedContentTransitionScope
+import androidx.compose.animation.ExperimentalSharedTransitionApi
+import androidx.compose.animation.SharedTransitionLayout
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -44,6 +46,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
+@OptIn(ExperimentalSharedTransitionApi::class)
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     var showSplashScreen = true
@@ -93,57 +96,63 @@ class MainActivity : ComponentActivity() {
             MVVMFoodAppTheme {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
                     val navController = rememberNavController()
-                    NavHost(
-                        navController = navController,
-                        startDestination = if (session.getToken() != null) Home else AuthScreen,
-                        modifier = Modifier.padding(innerPadding),
-                        enterTransition = {
-                            slideIntoContainer(
-                                towards = AnimatedContentTransitionScope.SlideDirection.Left,
-                                animationSpec = tween(300)
-                            ) + fadeIn(animationSpec = tween(300))
-                        },
-                        exitTransition = {
-                            slideOutOfContainer(
-                                towards = AnimatedContentTransitionScope.SlideDirection.Left,
-                                animationSpec = tween(300)
-                            ) + fadeOut(animationSpec = tween(300))
-                        },
-                        popEnterTransition = {
-                            slideIntoContainer(
-                                towards = AnimatedContentTransitionScope.SlideDirection.Right,
-                                animationSpec = tween(300)
-                            ) + fadeIn(animationSpec = tween(300))
-                        },
-                        popExitTransition = {
-                            slideOutOfContainer(
-                                towards = AnimatedContentTransitionScope.SlideDirection.Right,
-                                animationSpec = tween(300)
-                            ) + fadeOut(animationSpec = tween(300))
-                        }
-                    ) {
-                        composable<SignUp> {
-                            SignUpScreen(navController)
-                        }
-                        composable<AuthScreen> {
-                            AuthScreen(navController)
-                        }
-                        composable<Login> {
-                            SignInScreen(navController)
-                        }
-                        composable<Home> {
-                            HomeScreen(navController)
-                        }
-                        composable<RestaurantDetails> {
-                            val route = it.toRoute<RestaurantDetails>()
-                            RestaurantDetailsScreen(
-                                navController,
-                                name = route.restaurantName,
-                                imageUrl = route.restaurantImageUrl,
-                                restaurantID = route.restaurantID
-                            )
+
+                    SharedTransitionLayout {
+                        NavHost(
+                            navController = navController,
+                            startDestination = if (session.getToken() != null) Home else AuthScreen,
+                            modifier = Modifier.padding(innerPadding),
+                            enterTransition = {
+                                slideIntoContainer(
+                                    towards = AnimatedContentTransitionScope.SlideDirection.Left,
+                                    animationSpec = tween(300)
+                                ) + fadeIn(animationSpec = tween(300))
+                            },
+                            exitTransition = {
+                                slideOutOfContainer(
+                                    towards = AnimatedContentTransitionScope.SlideDirection.Left,
+                                    animationSpec = tween(300)
+                                ) + fadeOut(animationSpec = tween(300))
+                            },
+                            popEnterTransition = {
+                                slideIntoContainer(
+                                    towards = AnimatedContentTransitionScope.SlideDirection.Right,
+                                    animationSpec = tween(300)
+                                ) + fadeIn(animationSpec = tween(300))
+                            },
+                            popExitTransition = {
+                                slideOutOfContainer(
+                                    towards = AnimatedContentTransitionScope.SlideDirection.Right,
+                                    animationSpec = tween(300)
+                                ) + fadeOut(animationSpec = tween(300))
+                            }
+                        ) {
+                            composable<SignUp> {
+                                SignUpScreen(navController)
+                            }
+                            composable<AuthScreen> {
+                                AuthScreen(navController)
+                            }
+                            composable<Login> {
+                                SignInScreen(navController)
+                            }
+                            composable<Home> {
+                                HomeScreen(navController, this)
+                            }
+                            composable<RestaurantDetails> {
+                                val route = it.toRoute<RestaurantDetails>()
+                                RestaurantDetailsScreen(
+                                    navController,
+                                    name = route.restaurantName,
+                                    imageUrl = route.restaurantImageUrl,
+                                    restaurantID = route.restaurantID,
+                                    this
+                                )
+                            }
                         }
                     }
+
+
                 }
 
             }

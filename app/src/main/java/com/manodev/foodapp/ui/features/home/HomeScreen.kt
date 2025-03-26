@@ -1,5 +1,8 @@
 package com.manodev.foodapp.ui.features.home
 
+import androidx.compose.animation.AnimatedVisibilityScope
+import androidx.compose.animation.ExperimentalSharedTransitionApi
+import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -47,8 +50,13 @@ import com.manodev.foodapp.ui.theme.Orange
 import com.manodev.foodapp.ui.theme.Typography
 import kotlinx.coroutines.flow.collectLatest
 
+@OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
-fun HomeScreen(navController: NavController, viewModel: HomeViewModel = hiltViewModel()) {
+fun SharedTransitionScope.HomeScreen(
+    navController: NavController,
+    animatedVisibilityScope: AnimatedVisibilityScope,
+    viewModel: HomeViewModel = hiltViewModel(),
+) {
 
     LaunchedEffect(Unit) {
         viewModel.navigationEvent.collectLatest {
@@ -56,9 +64,10 @@ fun HomeScreen(navController: NavController, viewModel: HomeViewModel = hiltView
                 is HomeViewModel.HomeScreenNavigationEvents.NavigateToDetail -> {
                     navController.navigate(RestaurantDetails(it.id, it.name, it.imageUrl))
                 }
-                 else -> {
 
-                 }
+                else -> {
+
+                }
             }
         }
     }
@@ -81,7 +90,7 @@ fun HomeScreen(navController: NavController, viewModel: HomeViewModel = hiltView
                 CategoriesList(categories) {
                     navController.navigate("detail/${it.id}")
                 }
-                RestaurantsList(restaurants = viewModel.restaurant, onRestaurantSelected = {
+                RestaurantsList(restaurants = viewModel.restaurant, animatedVisibilityScope, onRestaurantSelected = {
                     viewModel.onRestaurantSelected(it)
                     //navController.navigate("restaurant/${it.id}")
                 })
@@ -91,8 +100,13 @@ fun HomeScreen(navController: NavController, viewModel: HomeViewModel = hiltView
     }
 }
 
+@OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
-fun RestaurantsList(restaurants: List<Restaurant>, onRestaurantSelected: (Restaurant) -> Unit) {
+fun SharedTransitionScope.RestaurantsList(
+    restaurants: List<Restaurant>,
+    animatedVisibilityScope: AnimatedVisibilityScope,
+    onRestaurantSelected: (Restaurant) -> Unit,
+) {
     Column {
         Row {
             Text(
@@ -109,14 +123,16 @@ fun RestaurantsList(restaurants: List<Restaurant>, onRestaurantSelected: (Restau
     Spacer(modifier = Modifier.size(16.dp))
     LazyRow {
         items(restaurants) {
-            RestaurantItem(restaurant = it, onRestaurantSelected)
+            RestaurantItem(restaurant = it, animatedVisibilityScope, onRestaurantSelected)
         }
     }
 }
 
+@OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
-fun RestaurantItem(
+fun SharedTransitionScope.RestaurantItem(
     restaurant: Restaurant,
+    animatedVisibilityScope: AnimatedVisibilityScope,
     onRestaurantSelected: (Restaurant) -> Unit,
 ) {
     Box(
@@ -134,7 +150,11 @@ fun RestaurantItem(
                 contentDescription = null,
                 modifier = Modifier
                     .fillMaxSize()
-                    .weight(1f),
+                    .weight(1f)
+                    .sharedElement(
+                        state = rememberSharedContentState(key = "image/${restaurant.id}"),
+                        animatedVisibilityScope = animatedVisibilityScope
+                    ),
                 contentScale = ContentScale.Crop
             )
 
@@ -147,7 +167,11 @@ fun RestaurantItem(
                 Text(
                     text = restaurant.name,
                     style = Typography.titleMedium,
-                    textAlign = TextAlign.Center
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.sharedElement(
+                        state = rememberSharedContentState(key = "title/${restaurant.id}"),
+                        animatedVisibilityScope = animatedVisibilityScope
+                    ),
                 )
 
                 Row(
@@ -161,7 +185,7 @@ fun RestaurantItem(
                             painter = painterResource(id = R.drawable.ic_delivery),
                             contentDescription = null,
                             modifier = Modifier
-                                .padding(vertical =  8.dp)
+                                .padding(vertical = 8.dp)
                                 .padding(end = 8.dp)
                                 .size(12.dp)
                         )
@@ -180,7 +204,7 @@ fun RestaurantItem(
                             painter = painterResource(id = R.drawable.timer),
                             contentDescription = null,
                             modifier = Modifier
-                                .padding(vertical =  8.dp)
+                                .padding(vertical = 8.dp)
                                 .padding(end = 8.dp)
                                 .size(12.dp)
                         )
