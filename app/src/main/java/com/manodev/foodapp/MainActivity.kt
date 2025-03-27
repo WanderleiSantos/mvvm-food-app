@@ -28,16 +28,20 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
 import com.manodev.foodapp.data.FoodApi
 import com.manodev.foodapp.data.FoodHubSession
+import com.manodev.foodapp.data.models.FoodItem
 import com.manodev.foodapp.ui.features.auth.AuthScreen
 import com.manodev.foodapp.ui.features.auth.login.SignInScreen
 import com.manodev.foodapp.ui.features.auth.signup.SignUpScreen
+import com.manodev.foodapp.ui.features.food_item_details.FoodDetailsScreen
 import com.manodev.foodapp.ui.features.home.HomeScreen
 import com.manodev.foodapp.ui.features.restaurants_details.RestaurantDetailsScreen
 import com.manodev.foodapp.ui.navigation.AuthScreen
+import com.manodev.foodapp.ui.navigation.FoodDetails
 import com.manodev.foodapp.ui.navigation.Home
 import com.manodev.foodapp.ui.navigation.Login
 import com.manodev.foodapp.ui.navigation.RestaurantDetails
 import com.manodev.foodapp.ui.navigation.SignUp
+import com.manodev.foodapp.ui.navigation.foodItemNavType
 import com.manodev.foodapp.ui.theme.MVVMFoodAppTheme
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
@@ -45,6 +49,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import javax.inject.Inject
+import kotlin.reflect.typeOf
 
 @OptIn(ExperimentalSharedTransitionApi::class)
 @AndroidEntryPoint
@@ -146,6 +151,16 @@ class MainActivity : ComponentActivity() {
                                     name = route.restaurantName,
                                     imageUrl = route.restaurantImageUrl,
                                     restaurantID = route.restaurantID,
+                                    this
+                                )
+                            }
+                            composable<FoodDetails>(
+                                typeMap = mapOf(typeOf<FoodItem>() to foodItemNavType)
+                            ) {
+                                val route = it.toRoute<FoodDetails>()
+                                FoodDetailsScreen(
+                                    navController,
+                                    foodItem = route.foodItem,
                                     this
                                 )
                             }
