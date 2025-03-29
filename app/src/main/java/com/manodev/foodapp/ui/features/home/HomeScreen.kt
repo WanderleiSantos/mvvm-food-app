@@ -87,9 +87,7 @@ fun SharedTransitionScope.HomeScreen(
 
             is HomeViewModel.HomeScreenstate.Success -> {
                 val categories = viewModel.categories
-                CategoriesList(categories) {
-                    navController.navigate("detail/${it.id}")
-                }
+                CategoriesList( categories = categories, onCategorySelected = {})
                 RestaurantsList(restaurants = viewModel.restaurant, animatedVisibilityScope, onRestaurantSelected = {
                     viewModel.onRestaurantSelected(it)
                     //navController.navigate("restaurant/${it.id}")

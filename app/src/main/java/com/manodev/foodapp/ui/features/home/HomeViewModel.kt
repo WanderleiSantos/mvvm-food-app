@@ -8,8 +8,10 @@ import com.manodev.foodapp.data.models.Restaurant
 import com.manodev.foodapp.data.remote.ApiResponse
 import com.manodev.foodapp.data.remote.safeApiCall
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -20,8 +22,8 @@ class HomeViewModel @Inject constructor(private val foodApi: FoodApi) : ViewMode
     private val _uiState = MutableStateFlow<HomeScreenstate>(HomeScreenstate.Loading)
     val uiState: StateFlow<HomeScreenstate> = _uiState.asStateFlow()
 
-    private val _navigationEvent = MutableStateFlow<HomeScreenNavigationEvents?>(null)
-    val navigationEvent = _navigationEvent.asStateFlow()
+    private val _navigationEvent = MutableSharedFlow<HomeScreenNavigationEvents?>()
+    val navigationEvent = _navigationEvent.asSharedFlow()
 
     var categories = emptyList<Category>()
     var restaurant = emptyList<Restaurant>()
@@ -74,12 +76,14 @@ class HomeViewModel @Inject constructor(private val foodApi: FoodApi) : ViewMode
         return list
     }
 
-    fun onRestaurantSelected(restaurant: Restaurant) {
+    fun onRestaurantSelected(it: Restaurant) {
         viewModelScope.launch {
-            _navigationEvent.value = HomeScreenNavigationEvents.NavigateToDetail(
-                restaurant.name,
-                restaurant.id,
-                restaurant.imageUrl
+            _navigationEvent.emit(
+                HomeScreenNavigationEvents.NavigateToDetail(
+                    it.name,
+                    it.imageUrl,
+                    it.id
+                )
             )
         }
     }
@@ -91,10 +95,7 @@ class HomeViewModel @Inject constructor(private val foodApi: FoodApi) : ViewMode
     }
 
     sealed class HomeScreenNavigationEvents {
-        data class NavigateToDetail(
-            val name: String,
-            val id: String,
-            val imageUrl: String,
-        ) : HomeScreenNavigationEvents()
+        data class NavigateToDetail(val name: String, val imageUrl: String, val id: String) :
+            HomeScreenNavigationEvents()
     }
 }
