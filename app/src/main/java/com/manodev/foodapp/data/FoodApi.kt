@@ -1,5 +1,7 @@
 package com.manodev.foodapp.data
 
+import com.manodev.foodapp.data.models.AddToCartRequest
+import com.manodev.foodapp.data.models.AddToCartResponse
 import com.manodev.foodapp.data.models.AuthResponse
 import com.manodev.foodapp.data.models.CategoriesResponse
 import com.manodev.foodapp.data.models.FoodItemResponse
@@ -40,4 +42,6 @@ interface FoodApi {
     @GET("/restaurants/{restaurantId}/menu")
     suspend fun getFoodItemForRestaurant(@Path("restaurantId") restaurantId: String): Response<FoodItemResponse>
 
+    @POST("/cart")
+    suspend fun addToCart(@Body request: AddToCartRequest): Response<AddToCartResponse>
 }
