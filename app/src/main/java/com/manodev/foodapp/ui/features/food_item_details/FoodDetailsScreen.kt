@@ -19,7 +19,9 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -36,12 +38,13 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import com.manodev.foodapp.R
 import com.manodev.foodapp.data.models.FoodItem
+import com.manodev.foodapp.ui.BasicDialog
 import com.manodev.foodapp.ui.features.restaurants_details.RestaurantDetails
 import com.manodev.foodapp.ui.features.restaurants_details.RestaurantDetailsHeader
 import kotlinx.coroutines.flow.collectLatest
 import java.util.Locale
 
-@OptIn(ExperimentalSharedTransitionApi::class)
+@OptIn(ExperimentalSharedTransitionApi::class, ExperimentalMaterial3Api::class)
 @Composable
 fun SharedTransitionScope.FoodDetailsScreen(
     navController: NavController,
@@ -50,12 +53,20 @@ fun SharedTransitionScope.FoodDetailsScreen(
     viewModel: FoodDetailsViewModel = hiltViewModel(),
 ) {
 
-    val count = viewModel.quantity.collectAsStateWithLifecycle()
-    val uiState = viewModel.uiState.collectAsStateWithLifecycle()
+    val showSuccessDialog = remember {
+        mutableStateOf(false)
+    }
+
+    val showErrorDialog = remember {
+        mutableStateOf(false)
+    }
 
     val isLoading = remember {
         mutableStateOf(false)
     }
+
+    val count = viewModel.quantity.collectAsStateWithLifecycle()
+    val uiState = viewModel.uiState.collectAsStateWithLifecycle()
 
     when (uiState.value) {
         FoodDetailsViewModel.FoodDetailsUiState.Loading -> {
@@ -71,19 +82,11 @@ fun SharedTransitionScope.FoodDetailsScreen(
         viewModel.event.collectLatest {
             when (it) {
                 is FoodDetailsViewModel.FoodDetailsEvent.onAddToCart -> {
-                    Toast.makeText(
-                        navController.context,
-                        "Item added to cart",
-                        Toast.LENGTH_SHORT
-                    ).show()
+                    showSuccessDialog.value = true
                 }
 
                 is FoodDetailsViewModel.FoodDetailsEvent.showErrorDialog -> {
-                    Toast.makeText(
-                        navController.context,
-                        "Failed to add item to cart" + it.message,
-                        Toast.LENGTH_SHORT
-                    ).show()
+                    showErrorDialog.value = true
                 }
 
                 is FoodDetailsViewModel.FoodDetailsEvent.goToCart -> {
@@ -182,4 +185,49 @@ fun SharedTransitionScope.FoodDetailsScreen(
             }
         }
     }
+
+    if (showSuccessDialog.value) {
+        ModalBottomSheet(onDismissRequest = { showSuccessDialog.value = false }) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp)
+            ) {
+                Text(text = "Item added to cart", style = MaterialTheme.typography.bodyMedium)
+                Spacer(modifier = Modifier.size(8.dp))
+                Button(
+                    onClick = {
+                        showSuccessDialog.value = false
+                        viewModel.goToCart()
+                    }, modifier = Modifier
+                        .padding(horizontal = 16.dp)
+                        .fillMaxWidth()
+                ) {
+                    Text(text = "Go to Cart", style = MaterialTheme.typography.bodyMedium)
+                }
+                Button(
+                    onClick = {
+                        showSuccessDialog.value = false
+                    }, modifier = Modifier
+                        .padding(horizontal = 16.dp)
+                        .fillMaxWidth()
+                ) {
+                    Text(text = "Ok", style = MaterialTheme.typography.bodyMedium)
+                }
+            }
+        }
+    }
+
+    if (showErrorDialog.value) {
+        ModalBottomSheet(onDismissRequest = { showErrorDialog.value = false }) {
+            BasicDialog(
+                title = "Error",
+                description = (uiState.value as? FoodDetailsViewModel.FoodDetailsUiState.Error)?.message
+                    ?: "Failed to add item to cart"
+            ) {
+                showErrorDialog.value = false
+            }
+        }
+    }
+
 }

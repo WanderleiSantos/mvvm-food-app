@@ -67,6 +67,12 @@ class FoodDetailsViewModel @Inject constructor(val foodApi: FoodApi) : ViewModel
         }
     }
 
+    fun goToCart() {
+        viewModelScope.launch {
+            _event.emit(FoodDetailsEvent.goToCart)
+        }
+    }
+
     sealed class FoodDetailsUiState {
         data object Nothing : FoodDetailsUiState()
         data object Loading : FoodDetailsUiState()
