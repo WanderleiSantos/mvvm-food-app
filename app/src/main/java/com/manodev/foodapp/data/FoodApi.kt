@@ -44,4 +44,7 @@ interface FoodApi {
 
     @POST("/cart")
     suspend fun addToCart(@Body request: AddToCartRequest): Response<AddToCartResponse>
+
+    @GET("/cart")
+    suspend fun getCart(): Response<AddToCartResponse>
 }
