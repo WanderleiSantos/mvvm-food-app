@@ -1,6 +1,5 @@
 package com.manodev.foodapp.ui.features.cart
 
-import android.widget.Space
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -10,20 +9,31 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
+import coil3.compose.AsyncImage
 import com.manodev.foodapp.R
+import com.manodev.foodapp.data.models.CartItem
+import com.manodev.foodapp.data.models.CheckoutDetails
+import com.manodev.foodapp.ui.features.food_item_details.FoodItemCounter
 
 @Composable
 fun CartScreen(navController: NavController, viewModel: CartViewModel = hiltViewModel()) {
@@ -41,10 +51,20 @@ fun CartScreen(navController: NavController, viewModel: CartViewModel = hiltView
                     CircularProgressIndicator()
                 }
             }
+
             is CartViewModel.CartUiState.Success -> {
                 val data = (uiState.value as CartViewModel.CartUiState.Success).data
                 LazyColumn {
-
+                    items(data.items) {
+                        CartItemView(
+                            cartItem = it,
+                            onIncrement = { cartItem, quantity -> viewModel.incrementQuantity(cartItem, quantity) },
+                            onDecrement = { cartItem, quantity -> viewModel.decrementQuantity(cartItem, quantity) },
+                            onRemove = { viewModel.removeItem(it) })
+                    }
+                    item {
+                        CheckoutDetailsView()
+                    }
                 }
             }
 
@@ -66,6 +86,65 @@ fun CartScreen(navController: NavController, viewModel: CartViewModel = hiltView
 
             }
         }
+    }
+}
+
+@Composable
+fun CheckoutDetailsView(checkoutDetails: CheckoutDetails) {
+    Column {
+
+    }
+}
+
+@Composable
+fun CartItemView(
+    cartItem: CartItem,
+    onIncrement: (CartItem, Int) -> Unit,
+    onDecrement: (CartItem, Int) -> Unit,
+    onRemove: (CartItem) -> Unit,
+) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        AsyncImage(
+            model = cartItem.menuItemId.imageUrl,
+            contentDescription = null,
+            modifier = Modifier
+                .size(82.dp)
+                .clip(RoundedCornerShape(12.dp))
+        )
+        Spacer(modifier = Modifier.size(16.dp))
+        Column(
+
+        ) {
+            Row {
+                Text(text = cartItem.menuItemId.name, style = MaterialTheme.typography.titleMedium)
+                Spacer(modifier = Modifier.weight(1f))
+                IconButton(onClick = { onRemove.invoke(cartItem) }) {
+                    Icon(
+                        imageVector = Icons.Filled.Close,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.primary
+                    )
+                }
+            }
+            Text(text = cartItem.menuItemId.description, maxLines = 1, color = Color.Gray)
+            Row {
+                Text(
+                    text = "$${cartItem.menuItemId.price}",
+                    style = MaterialTheme.typography.titleMedium,
+                    color = MaterialTheme.colorScheme.primary
+                )
+                Spacer(modifier = Modifier.weight(1f))
+                FoodItemCounter(
+                    onCounterIncrement = { onIncrement.invoke(cartItem, cartItem.quantity) },
+                    onCounterDecrement = { onDecrement.invoke(cartItem, cartItem.quantity) },
+                    count = cartItem.quantity
+                )
+            }
+        }
+
     }
 }
 

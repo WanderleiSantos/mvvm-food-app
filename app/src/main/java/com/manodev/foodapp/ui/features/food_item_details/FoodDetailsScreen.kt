@@ -130,24 +130,11 @@ fun SharedTransitionScope.FoodDetailsScreen(
 
             Spacer(modifier = Modifier.weight(1f))
 
-            Row(
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Image(
-                    painter = painterResource(id = R.drawable.add),
-                    contentDescription = null,
-                    modifier = Modifier
-                        .clip(CircleShape)
-                        .clickable { viewModel.incrementQuantity() })
-                Spacer(modifier = Modifier.size(8.dp))
-                Text(text = "${count.value}", style = MaterialTheme.typography.titleMedium)
-                Spacer(modifier = Modifier.size(8.dp))
-                Image(
-                    painter = painterResource(id = R.drawable.minus), contentDescription = null,
-                    modifier = Modifier
-                        .clip(CircleShape)
-                        .clickable { viewModel.decrementQuantity() })
-            }
+            FoodItemCounter(
+                onCounterIncrement = { viewModel.incrementQuantity() },
+                onCounterDecrement = { viewModel.decrementQuantity() },
+                count = count.value
+            )
         }
         Spacer(modifier = Modifier.weight(1f))
 
@@ -229,5 +216,26 @@ fun SharedTransitionScope.FoodDetailsScreen(
             }
         }
     }
+}
 
+@Composable
+fun FoodItemCounter(onCounterIncrement: () -> Unit, onCounterDecrement: () -> Unit, count: Int) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Image(
+            painter = painterResource(id = R.drawable.add),
+            contentDescription = null,
+            modifier = Modifier
+                .clip(CircleShape)
+                .clickable { onCounterIncrement.invoke() })
+        Spacer(modifier = Modifier.size(8.dp))
+        Text(text = "$count", style = MaterialTheme.typography.titleMedium)
+        Spacer(modifier = Modifier.size(8.dp))
+        Image(
+            painter = painterResource(id = R.drawable.minus), contentDescription = null,
+            modifier = Modifier
+                .clip(CircleShape)
+                .clickable { onCounterDecrement.invoke() })
+    }
 }
