@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -19,6 +20,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.VerticalDivider
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -63,7 +65,7 @@ fun CartScreen(navController: NavController, viewModel: CartViewModel = hiltView
                             onRemove = { viewModel.removeItem(it) })
                     }
                     item {
-                        CheckoutDetailsView()
+                        CheckoutDetailsView(data.checkoutDetails)
                     }
                 }
             }
@@ -92,8 +94,30 @@ fun CartScreen(navController: NavController, viewModel: CartViewModel = hiltView
 @Composable
 fun CheckoutDetailsView(checkoutDetails: CheckoutDetails) {
     Column {
-
+        CheckoutRowItem(title = "Subtotal", value = "${checkoutDetails.subTotal}", currency = "USD")
+        CheckoutRowItem(title = "Tax", value = "${checkoutDetails.tax}", currency = "USD")
+        CheckoutRowItem(title = "Delivery Fee", value = "${checkoutDetails.deliveryFee}", currency = "USD")
+        CheckoutRowItem(title = "Total", value = "${checkoutDetails.totalAmount}", currency = "USD")
     }
+}
+
+@Composable
+fun CheckoutRowItem(title: String, value: String, currency: String) {
+    Column {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 4.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(text = title, style = MaterialTheme.typography.titleMedium)
+            Spacer(modifier = Modifier.weight(1f))
+            Text(text = value, style = MaterialTheme.typography.titleMedium)
+            Text(text = currency, style = MaterialTheme.typography.bodyMedium, color = Color.LightGray)
+        }
+        VerticalDivider()
+    }
+
 }
 
 @Composable
